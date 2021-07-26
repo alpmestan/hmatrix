@@ -30,13 +30,14 @@ See code examples at http://dis.um.es/~alberto/hmatrix/static.html.
 -}
 
 module Numeric.LinearAlgebra.Static(
+    Dim(..),
     -- * Vector
-       ℝ, R,
+    ℝ, R,
     vec2, vec3, vec4, (&), (#), split, headTail,
     vector,
     linspace, range, dim,
     -- * Matrix
-    L, Sq, build,
+    L(..), Sq, build,
     row, col, (|||),(===), splitRows, splitCols,
     unrow, uncol,
     tr,
@@ -71,7 +72,7 @@ module Numeric.LinearAlgebra.Static(
     withVector, withMatrix, exactLength, exactDims,
     toRows, toColumns, withRows, withColumns,
     Sized(..), Diag(..), Sym, sym, mTm, unSym, (<·>)
-) where
+,imapL,imapLM_,at) where
 
 
 import GHC.TypeLits
@@ -659,6 +660,13 @@ mapR f (unwrap -> v) = mkR (LA.cmap f v)
 zipWithR :: KnownNat n => (ℝ -> ℝ -> ℝ) -> R n -> R n -> R n
 zipWithR f (extract -> x) (extract -> y) = mkR (LA.zipVectorWith f x y)
 
+imapL :: (KnownNat n, KnownNat m) => ((Int, Int) -> ℝ -> ℝ) -> L n m -> L n m
+imapL f = overMatL' (LA.mapMatrixWithIndex f)
+
+imapLM_
+  :: (KnownNat n, KnownNat p, Monad m) => ((Int, Int) -> ℝ -> m ()) -> L n p -> m ()
+imapLM_ f = LA.mapMatrixWithIndexM_ f . unwrap
+
 mapL :: (KnownNat n, KnownNat m) => (ℝ -> ℝ) -> L n m -> L n m
 mapL f = overMatL' (LA.cmap f)
 
@@ -910,3 +918,7 @@ instance KnownNat n => Transposable (Sym n) (Sym n) where
 instance KnownNat n => Transposable (Her n) (Her n) where
     tr          = id
     tr' (Her m) = Her (tr' m)
+
+at :: (KnownNat n, KnownNat p) => L n p -> (Int, Int) -> ℝ
+at m idx = case extract m of
+  mat -> mat `atIndex` idx
