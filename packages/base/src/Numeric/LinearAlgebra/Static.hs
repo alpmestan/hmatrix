@@ -32,7 +32,7 @@ See code examples at http://dis.um.es/~alberto/hmatrix/static.html.
 module Numeric.LinearAlgebra.Static(
     Dim(..),
     -- * Vector
-    ℝ, R,
+    ℝ, R(..),
     vec2, vec3, vec4, (&), (#), split, headTail,
     vector,
     linspace, range, dim,
